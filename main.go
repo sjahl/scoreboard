@@ -33,9 +33,6 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println("league var has value", league)
-	fmt.Println("date_string has value", date_string)
-
 	params := url.Values{}
 	if date_string != "" {
 		params.Add("date", date_string)
