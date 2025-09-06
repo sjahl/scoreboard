@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 var leagueMap = map[string]string{
@@ -28,21 +29,32 @@ func main() {
 	flag.StringVar(&league, "l", "championship", "specify the league to fetch stores for")
 
 	var date_string string
-	flag.StringVar(&date_string, "d", "", "specify the date to fetch scores for")
+	flag.StringVar(&date_string, "d", "", "specify the date to fetch scores for, format: YYYYMMDD")
 
 	flag.Parse()
 
 	fmt.Println("league var has value", league)
 	fmt.Println("date_string has value", date_string)
 
-	// TODO: construct query params better later...
+	params := url.Values{}
 	if date_string != "" {
-		date_string = fmt.Sprintf("?date=%s", date_string)
+		params.Add("date", date_string)
 	}
 
-	req_url := fmt.Sprintf("http://site.api.espn.com/apis/site/v2/sports/soccer/%s/scoreboard%s", leagueMap[league], date_string)
+	// TODO: check that we can actually access leagueMap[league]
+	req_url, err := url.JoinPath("/apis/site/v2/sports/soccer", leagueMap[league], "scoreboard")
+	if err != nil {
+		log.Fatalf("")
+	}
 
-	res, err := http.Get(req_url)
+	u := url.URL{
+		Scheme:   "http",
+		Host:     "site.api.espn.com",
+		Path:     req_url,
+		RawQuery: params.Encode(),
+	}
+
+	res, err := http.Get(u.String())
 	if err != nil {
 		log.Fatalf("HTTP request failed to %s", req_url)
 	}
