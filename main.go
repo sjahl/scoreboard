@@ -114,13 +114,11 @@ func main() {
 		RawQuery: params.Encode(),
 	}
 
-	api_response := fetchScores(u)
+	scores := ApiResponse{}
+	json.Unmarshal(fetchScores(u), &scores)
 
-	res := ApiResponse{}
-	json.Unmarshal(api_response, &res)
-
-	if len(res.Events) > 0 {
-		fmt.Printf("%v", res)
+	if len(scores.Events) > 0 {
+		fmt.Printf("%v", scores)
 	} else {
 		fmt.Println("No events on date:", params.Get("dates"))
 	}
