@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net/http"
 	"net/url"
+	"slices"
 )
 
 var leagueMap = map[string]string{
@@ -73,6 +75,11 @@ func fetchScores(req url.URL) []byte {
 	return body
 }
 
+func validateLeague(league string) bool {
+	keys := slices.Collect(maps.Keys(leagueMap))
+	return slices.Contains(keys, league)
+}
+
 func main() {
 
 	fmt.Println("Welcome to the scoreboard!")
@@ -84,6 +91,10 @@ func main() {
 	flag.StringVar(&date_string, "d", "", "specify the date to fetch scores for, format: YYYYMMDD")
 
 	flag.Parse()
+
+	if !validateLeague(league) {
+		log.Fatalf("Unknown league %s", league)
+	}
 
 	params := url.Values{}
 	if date_string != "" {
