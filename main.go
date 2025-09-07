@@ -121,7 +121,7 @@ func main() {
 	}
 
 	u := url.URL{
-		Scheme:   "http",
+		Scheme:   "https",
 		Host:     "site.api.espn.com",
 		Path:     req_url,
 		RawQuery: params.Encode(),
