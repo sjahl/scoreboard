@@ -78,9 +78,14 @@ func fetchScores(req url.URL) []byte {
 	return body
 }
 
-func validateLeague(league string) bool {
+func validateLeague(league string) (bool, error) {
 	keys := slices.Collect(maps.Keys(leagueMap))
-	return slices.Contains(keys, league)
+	if !slices.Contains(keys, league) {
+		err := fmt.Errorf("please enter one of the supported leagues: %v", keys)
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (e *Event) simpleScore() string {
@@ -101,8 +106,8 @@ func main() {
 
 	flag.Parse()
 
-	if !validateLeague(league) {
-		log.Fatalf("Unknown league %s", league)
+	if _, err := validateLeague(league); err != nil {
+		log.Fatal(err)
 	}
 
 	params := url.Values{}
