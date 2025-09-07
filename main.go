@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -21,6 +22,57 @@ var leagueMap = map[string]string{
 	"ligue-1":      "fra.1",
 }
 
+type Competitor struct {
+	Uid      string
+	HomeAway string
+	Form     string
+	Score    int
+}
+
+type CompetitionStatus struct {
+	Clock        int    `json:"clock"`
+	DisplayClock string `json:"displayClock"`
+}
+
+type Competition struct {
+	Status struct {
+		Clock        int
+		DisplayClock string
+	}
+	Competitors []Competitor
+}
+
+type Event struct {
+	Name         string        `json:"name"`
+	ShortName    string        `json:"shortName"`
+	Competitions []Competition `json:"competitions"`
+}
+
+type ApiResponse struct {
+	Events []Event `json:"events"`
+}
+
+func fetchScores(req url.URL) []byte {
+	res, err := http.Get(req.String())
+
+	if err != nil {
+		log.Fatalf("HTTP request failed to %s", req)
+	}
+
+	body, err := io.ReadAll(res.Body)
+	res.Body.Close()
+
+	if res.StatusCode > 299 {
+		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return body
+}
+
 func main() {
 
 	fmt.Println("Welcome to the scoreboard!")
@@ -35,7 +87,7 @@ func main() {
 
 	params := url.Values{}
 	if date_string != "" {
-		params.Add("date", date_string)
+		params.Add("dates", date_string)
 	}
 
 	// TODO: check that we can actually access leagueMap[league]
@@ -51,17 +103,14 @@ func main() {
 		RawQuery: params.Encode(),
 	}
 
-	res, err := http.Get(u.String())
-	if err != nil {
-		log.Fatalf("HTTP request failed to %s", req_url)
+	api_response := fetchScores(u)
+
+	res := ApiResponse{}
+	json.Unmarshal(api_response, &res)
+
+	if len(res.Events) > 0 {
+		fmt.Printf("%v", res)
+	} else {
+		fmt.Println("No events on date:", params.Get("dates"))
 	}
-	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
-	if res.StatusCode > 299 {
-		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s", body)
 }
