@@ -67,12 +67,12 @@ func fetchScores(req url.URL) []byte {
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 
-	if res.StatusCode > 299 {
-		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
-
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if res.StatusCode > 299 {
+		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 	}
 
 	return body
