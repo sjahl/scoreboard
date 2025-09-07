@@ -24,11 +24,17 @@ var leagueMap = map[string]string{
 	"ligue-1":      "fra.1",
 }
 
+type Team struct {
+	Uid          string `json:"uid"`
+	Abbreviation string `json:"abbreviation"`
+}
+
 type Competitor struct {
-	Uid      string
-	HomeAway string
-	Form     string
-	Score    int
+	Uid      string `json:"uid"`
+	HomeAway string `json:"homeAway"`
+	Form     string `json:"form"`
+	Score    string `json:"score"`
+	Team     Team   `json:"team"`
 }
 
 type CompetitionStatus struct {
@@ -37,11 +43,8 @@ type CompetitionStatus struct {
 }
 
 type Competition struct {
-	Status struct {
-		Clock        int
-		DisplayClock string
-	}
-	Competitors []Competitor
+	Status      CompetitionStatus `json:"status"`
+	Competitors []Competitor      `json:"competitors"`
 }
 
 type Event struct {
@@ -58,7 +61,7 @@ func fetchScores(req url.URL) []byte {
 	res, err := http.Get(req.String())
 
 	if err != nil {
-		log.Fatalf("HTTP request failed to %s", req)
+		log.Fatalf("HTTP request failed to %v", req)
 	}
 
 	body, err := io.ReadAll(res.Body)
@@ -78,6 +81,12 @@ func fetchScores(req url.URL) []byte {
 func validateLeague(league string) bool {
 	keys := slices.Collect(maps.Keys(leagueMap))
 	return slices.Contains(keys, league)
+}
+
+func (e *Event) simpleScore() string {
+	homeTeam := e.Competitions[0].Competitors[0]
+	awayTeam := e.Competitions[0].Competitors[1]
+	return fmt.Sprintf("%s %s - %s %s", homeTeam.Team.Abbreviation, homeTeam.Score, awayTeam.Score, awayTeam.Team.Abbreviation)
 }
 
 func main() {
@@ -101,7 +110,6 @@ func main() {
 		params.Add("dates", date_string)
 	}
 
-	// TODO: check that we can actually access leagueMap[league]
 	req_url, err := url.JoinPath("/apis/site/v2/sports/soccer", leagueMap[league], "scoreboard")
 	if err != nil {
 		log.Fatalf("")
@@ -118,7 +126,9 @@ func main() {
 	json.Unmarshal(fetchScores(u), &scores)
 
 	if len(scores.Events) > 0 {
-		fmt.Printf("%v", scores)
+		for _, s := range scores.Events {
+			fmt.Println(s.simpleScore())
+		}
 	} else {
 		fmt.Println("No events on date:", params.Get("dates"))
 	}
