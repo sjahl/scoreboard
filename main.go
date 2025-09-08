@@ -23,6 +23,8 @@ var leagueMap = map[string]string{
 	"laliga":       "esp.1",
 	"ligue-1":      "fra.1",
 	"mlb":          "mlb",
+	"nfl":          "nfl",
+	"cfb":          "college-football",
 }
 
 type Team struct {
