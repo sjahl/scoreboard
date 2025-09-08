@@ -89,8 +89,20 @@ func validateLeague(league string) (bool, error) {
 }
 
 func (e *Event) simpleScore() string {
-	homeTeam := e.Competitions[0].Competitors[0]
-	awayTeam := e.Competitions[0].Competitors[1]
+	var homeTeam, awayTeam *Competitor
+	// TODO: this assumes there is one competition, and we might want to check if there's more.
+	for i := range e.Competitions[0].Competitors {
+		c := &e.Competitions[0].Competitors[i]
+		switch c.HomeAway {
+		case "home":
+			homeTeam = c
+		case "away":
+			awayTeam = c
+		}
+	}
+	if homeTeam == nil || awayTeam == nil {
+		return "Teams not found"
+	}
 	return fmt.Sprintf("%s %s - %s %s", homeTeam.Team.Abbreviation, homeTeam.Score, awayTeam.Score, awayTeam.Team.Abbreviation)
 }
 
