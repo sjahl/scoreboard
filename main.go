@@ -22,6 +22,7 @@ var leagueMap = map[string]string{
 	"eredivisie":   "ned.1",
 	"laliga":       "esp.1",
 	"ligue-1":      "fra.1",
+	"mlb":          "mlb",
 }
 
 type Team struct {
@@ -106,9 +107,17 @@ func (e *Event) simpleScore() string {
 	return fmt.Sprintf("%s %s - %s %s", homeTeam.Team.Abbreviation, homeTeam.Score, awayTeam.Score, awayTeam.Team.Abbreviation)
 }
 
+// TODO: parseScore() Score {}
+// Thinking we'll want a generic score type that represents a game score in a way that any display can take and use it
+// Is there enough information in Competitor to encode this?
+
 func main() {
 
 	fmt.Println("Welcome to the scoreboard!")
+
+	// TODO: Create a defaults mechanism so that a default league is intelligently selected based on the sport
+	var sport string
+	flag.StringVar(&sport, "s", "soccer", "Specify the sport to fetch scores for")
 
 	var league string
 	flag.StringVar(&league, "l", "championship", "specify the league to fetch stores for")
@@ -127,7 +136,7 @@ func main() {
 		params.Add("dates", date_string)
 	}
 
-	req_url, err := url.JoinPath("/apis/site/v2/sports/soccer", leagueMap[league], "scoreboard")
+	req_url, err := url.JoinPath("/apis/site/v2/sports", sport, leagueMap[league], "scoreboard")
 	if err != nil {
 		log.Fatalf("")
 	}
