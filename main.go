@@ -25,6 +25,7 @@ var leagueMap = map[string]string{
 	"mlb":          "mlb",
 	"nfl":          "nfl",
 	"cfb":          "college-football",
+  "nhl":          "nhl",
 }
 
 type Team struct {
